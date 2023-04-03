@@ -62,21 +62,19 @@ describe("GET /companies/:id", function () {
 describe("POST /companies", function () {
 	test("Creates a company", async function () {
 		const adamComp = {
-			code: `adamcomp`,
 			name: `Adam Corp`,
 			description: `Adam's company`,
 		};
-        const response = await request(app)
-            .post(`/companies`)
-            .send(adamComp);
+		const response = await request(app).post(`/companies`).send(adamComp);
 		expect(response.statusCode).toEqual(201);
+		expect(response.body).toEqual({ company: { ...adamComp, code: "adam-corp" } });
 
 		const newComp = await db.query(
 			`SELECT *
             FROM companies
-            WHERE code = 'adamcomp'`
+            WHERE code = 'adam-corp'`
 		);
-		expect(newComp.rows[0]).toEqual(adamComp);
+		expect(newComp.rows[0]).toEqual({ ...adamComp, code: "adam-corp" });
 	});
 	test("Throws an error with invalid info", async function () {
 		const badData = {
@@ -84,73 +82,69 @@ describe("POST /companies", function () {
 			name: `Adam Corp`,
 			baddescription: `Adam's company`,
 		};
-        const response = await request(app)
-            .post(`/companies`)
-			.send(badData).
-			expect(400)
+		const response = await request(app)
+			.post(`/companies`)
+			.send(badData)
+			.expect(400);
 
-		expect(response.body.error).toEqual("Must submit code, name, and description")
+		expect(response.body.error).toEqual("Must submit name and description");
 	});
 });
 
 describe("PUT /companies", function () {
 	test("Updates a company", async function () {
-		const update = {name:"New Name", description:"new description!"}
-        const response = await request(app)
-            .put(`/companies/testcompany`)
-            .send(update);
-		
+		const update = { name: "New Name", description: "new description!" };
+		const response = await request(app)
+			.put(`/companies/testcompany`)
+			.send(update);
+
 		expect(response.statusCode).toEqual(200);
 
-		const expectedCompany = { ...update, code: testCompany.code }
-		expect(response.body).toEqual({ company: expectedCompany })
-		
+		const expectedCompany = { ...update, code: testCompany.code };
+		expect(response.body).toEqual({ company: expectedCompany });
+
 		const updatedCompany = await db.query(
 			`SELECT name, description, code
             FROM companies
             WHERE code = 'testcompany'`
 		);
-		
-		expect(updatedCompany.rows[0]).toEqual(expectedCompany)
+
+		expect(updatedCompany.rows[0]).toEqual(expectedCompany);
 	});
 
 	test("Throws an error when company not found", async function () {
-		const update = {name:"New Name", description:"new description!"}
-        const response = await request(app)
-            .put(`/companies/0`)
-            .send(update);
-		
+		const update = { name: "New Name", description: "new description!" };
+		const response = await request(app).put(`/companies/0`).send(update);
+
 		expect(response.statusCode).toEqual(404);
-		expect(response.body.error).toEqual(`Company code '0' not found.`)
+		expect(response.body.error).toEqual(`Company code '0' not found.`);
 	});
 });
 
-
 describe("DELETE /companies", function () {
 	test("Deletes a company", async function () {
-		const update = {name:"New Name", description:"new description!"}
-        const response = await request(app)
-            .delete(`/companies/testcompany`)
-		
+		const update = { name: "New Name", description: "new description!" };
+		const response = await request(app).delete(`/companies/testcompany`);
+
 		expect(response.statusCode).toEqual(200);
-		expect(response.body).toEqual({ status: "deleted" })
-		
+		expect(response.body).toEqual({ status: "deleted" });
+
 		const updatedCompany = await db.query(
 			`SELECT name, description, code
             FROM companies
             WHERE code = 'testcompany'`
 		);
-		
-		expect(updatedCompany.rows[0]).toBeUndefined()
+
+		expect(updatedCompany.rows[0]).toBeUndefined();
 	});
 
 	test("Throws an error when company not found", async function () {
-		const update = {name:"New Name", description:"new description!"}
-        const response = await request(app)
-            .delete(`/companies/badcode`)
-            .send(update);
-		
+		const update = { name: "New Name", description: "new description!" };
+		const response = await request(app)
+			.delete(`/companies/badcode`)
+			.send(update);
+
 		expect(response.statusCode).toEqual(404);
-		expect(response.body.error).toEqual(`Company code 'badcode' not found.`)
+		expect(response.body.error).toEqual(`Company code 'badcode' not found.`);
 	});
 });
