@@ -26,6 +26,10 @@ router.get("/:code", async (req, res, next) => {
 			[req.params.code]
 		);
 
+		if (!compResults.rows.length) {
+			throw new ExpressError (`Company code '${req.params.code}' not found.`, 404)
+		};
+
 		const invoiceResults = await db.query(
 			`SELECT id
             FROM invoices
@@ -33,17 +37,9 @@ router.get("/:code", async (req, res, next) => {
 			[req.params.code]
 		);
 
-		if (!compResults.rows.length) return next();
-
-		const { code, name, description, id } = compResults.rows[0];
+		const company = compResults.rows[0];
 		const invoices = invoiceResults.rows.map((inv) => inv.id);
-
-		const company = {
-			code,
-			name,
-			description,
-			invoices,
-		};
+		company.invoices = invoices
 
 		return res.json({ company });
 	} catch (error) {
@@ -81,7 +77,9 @@ router.put("/:code", async (req, res, next) => {
 			[name, description, req.params.code]
 		);
 
-		if (!results.rows.length) return next();
+		if (!results.rows.length) {
+			throw new ExpressError(`Company code '${req.params.code}' not found.`, 404)
+		};
 
 		return res.json({ company: results.rows[0] });
 	} catch (error) {
@@ -98,7 +96,9 @@ router.delete("/:code", async (req, res, next) => {
 			[req.params.code]
 		);
 
-		if (!results.rows.length) return next();
+		if (!results.rows.length) {
+			throw new ExpressError(`Company code '${req.params.code}' not found.`, 404)
+		};
 
 		return res.json({ status: "deleted" });
 	} catch (error) {

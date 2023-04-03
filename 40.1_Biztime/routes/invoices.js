@@ -16,37 +16,31 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
 	try {
-		const results = await db.query(
-			`SELECT 
-            i.id, 
-            i.amt, 
-            i.paid, 
-            i.add_date, 
-            i.paid_date,
-            c.code,
-            c.name,
-            c.description
-            FROM invoices AS i
-            JOIN companies AS c
-                ON (i.comp_code = c.code)
-            WHERE i.id = $1
-            `,
+		const invResults = await db.query(
+			`SELECT id, amt, paid, add_date, paid_date, comp_code
+            FROM invoices
+            WHERE id = $1`,
 			[req.params.id]
 		);
-
-		if (!results.rows.length) {
-			throw new ExpressError(`No such invoice: ${id}`, 404);
+		
+		if (invResults.rows.length === 0) {
+			throw new ExpressError(`Invoice with ID: ${req.params.id} not found.`, 404);
 		}
 
-		const { code, name, description, ...rest } = results.rows[0];
-		const invoice = {
-			...rest,
-			company: {
-				code,
-				name,
-				description,
-			},
-		};
+		const invoice = invResults.rows[0];
+		const { comp_code } = invoice
+		delete invoice.comp_code
+
+		const compResults = await db.query(
+			`SELECT code, name, description
+			FROM companies 
+			WHERE code = '${comp_code}'`
+		)
+		
+		console.log(compResults.rows)
+
+		const company = compResults.rows[0]
+		invoice.company = company
 
 		return res.json({invoice});
 	} catch (error) {
