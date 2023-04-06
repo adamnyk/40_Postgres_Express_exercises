@@ -10,7 +10,7 @@ class Customer {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.fullName = this.fullName()
+
 		this.phone = phone;
 		this.notes = notes;
 	}
@@ -28,6 +28,18 @@ class Customer {
        ORDER BY last_name, first_name`
 		);
 		return results.rows.map((c) => new Customer(c));
+	}
+
+	/** returns full name */
+	get fullName() {
+		return `${this.firstName} ${this.lastName}`;
+	}
+
+	set notes(val) {
+		this._notes =  val || ""
+	}
+	get notes() {
+		return this._notes
 	}
 
 	/** get a customer by ID. */
@@ -124,10 +136,7 @@ class Customer {
 		}
 	}
 
-	/** returns full name. */
-	fullName() {
-		return `${this.firstName} ${this.lastName}`;
-	}
+
 }
 
 module.exports = Customer;
