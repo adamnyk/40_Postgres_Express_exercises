@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Customer Search{% endblock %}
+{% block content %}
+
+<a class="btn btn-primary" style="float: right" href="/add/">Add a Customer</a></p>
+
+<h1>Customers: </h1>
+
+{% if not customers|length  %}
+<p>No customers found for '{{query}}'.</p>
+
+{% else %}
+<p>results for <i>'{{query}}'</i></p>
+<ul style="column-count: 4">
+  {% for customer in customers %}
+  <li><a href="/{{ customer.id }}/">{{customer.fullName}}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+
+{% endblock %}
