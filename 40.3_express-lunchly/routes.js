@@ -46,6 +46,18 @@ router.post("/add/", async function (req, res, next) {
 	}
 });
 
+/** Show top 10 customers with most reservations */
+router.get("/best/", async (req, res, next) => {
+	try {
+    const customers = await Customer.getBest();
+    
+		return res.render("customer_best.html", { customers });
+	} catch (err) {
+		return next(err);
+	}
+});
+
+
 /** Show a customer, given their ID. */
 
 router.get("/:id/", async function (req, res, next) {
@@ -114,15 +126,15 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
 
 /** Handling search for customer. */
 router.post("/search/", async (req, res, next) => {
-  try {
-    const query = req.body.search
-    const customers = await Customer.search(query)
+	try {
+		const query = req.body.search;
+		const customers = await Customer.search(query);
 
-    return res.render("customer_search.html", { customers, query });
-
-  } catch (err) {
-    return next(err)
-  }
+		return res.render("customer_search.html", { customers, query });
+	} catch (err) {
+		return next(err);
+	}
 });
+
 
 module.exports = router;
