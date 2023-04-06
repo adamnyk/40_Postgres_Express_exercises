@@ -60,6 +60,26 @@ class Customer {
 		return await Reservation.getReservationsForCustomer(this.id);
 	}
 
+	/** search for customer and return ids */
+	static async search(query) {
+		const ilikeQuery = "%"+query.replaceAll(" ", "%")+"%"
+
+		const result = await db.query(
+			`SELECT id, 
+			first_name AS "firstName",  
+			last_name AS "lastName", 
+			phone, 
+			notes 
+			FROM customers
+			WHERE concat(first_name,' ',last_name) ILIKE $1
+			ORDER BY last_name, first_name`,
+			[ilikeQuery]
+		)
+
+		return result.rows.map(c=> new Customer(c))
+	}
+
+
 	/** save this customer. */
 
 	async save() {
